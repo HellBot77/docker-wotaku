@@ -6,14 +6,14 @@ RUN git clone https://github.com/wotakumoe/Wotaku.git && \
     ([[ "$TAG" = "latest" ]] || git checkout ${TAG})
     # rm -rf .git
 
-FROM node AS build
+FROM --platform=$BUILDPLATFORM node AS build
 
 WORKDIR /Wotaku
 COPY --from=base /git/Wotaku .
 RUN npm install --global pnpm && \
-    pnpm install && \
+    pnpm install --frozen-lockfile && \
     pnpm docs:build
 
-FROM lipanski/docker-static-website
+FROM joseluisq/static-web-server
 
-COPY --from=build /Wotaku/docs/.vitepress/dist .
+COPY --from=build /Wotaku/docs/.vitepress/dist ./public
